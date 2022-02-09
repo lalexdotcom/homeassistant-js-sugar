@@ -11,7 +11,7 @@ import {
   HassEvent,
   StateChangedEvent,
 } from "home-assistant-js-websocket";
-import { Entity, EntityDomain } from "./Entity";
+import { Entity, Domain as Domain } from "./Entity";
 import { createNodeSocket } from "../node/socket";
 import { BinarySensor } from "../entities/BinarySensor";
 import { Switch } from "../entities/Switch";
@@ -25,12 +25,13 @@ type EntityClass = {
   new (conn: Connection, props: HassEntity): Entity;
 };
 
-const entityDomainRegistry: { [key in EntityDomain]: EntityClass } = {
-  binary_sensor: BinarySensor,
-  switch: Switch,
-  light: Light,
-  sensor: Sensor,
-  fan: Fan,
+const entityDomainRegistry: { [key in Domain]: EntityClass } = {
+  [Domain.BINARY_SENSOR]: BinarySensor,
+  [Domain.SWITCH]: Switch,
+  [Domain.LIGHT]: Light,
+  [Domain.SENSOR]: Sensor,
+  [Domain.FAN]: Fan,
+  [Domain.INPUT_BOOLEAN]: Switch,
 };
 
 export class Connection {
@@ -56,7 +57,7 @@ export class Connection {
     const states = await getStates(this.#ha);
     for (const st of states) {
       const entityClass =
-        entityDomainRegistry[st.entity_id.split(".").shift()! as EntityDomain];
+        entityDomainRegistry[st.entity_id.split(".").shift()! as Domain];
       if (entityClass) {
         const entity = new entityClass(this, st);
         if (entity) this.#entities[st.entity_id] = entity;
@@ -84,7 +85,7 @@ export class Connection {
   }
 
   async callService(
-    domain: EntityDomain | string,
+    domain: Domain | string,
     service: string,
     serviceData?: any,
     target?: any

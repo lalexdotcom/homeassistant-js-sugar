@@ -8,12 +8,13 @@ import { Light } from "../entities/Light";
 
 const LGR = LG.ns("sugar/entity");
 
-export enum EntityDomain {
+export enum Domain {
   BINARY_SENSOR = "binary_sensor",
   SWITCH = "switch",
   LIGHT = "light",
   SENSOR = "sensor",
   FAN = "fan",
+  INPUT_BOOLEAN = "input_boolean",
 }
 
 type EntityStateListenerOptions = {
@@ -27,7 +28,7 @@ type EntityStateListener<T extends Entity> = (
 ) => void;
 
 export abstract class Entity {
-  readonly domain: EntityDomain;
+  readonly domain: Domain;
   #connection: Connection;
   #listeners: Map<Function, EntityStateListenerOptions> = new Map();
   private entityState!: HassEntity;
@@ -41,7 +42,7 @@ export abstract class Entity {
 
   constructor(conn: Connection, props: HassEntity) {
     this.#connection = conn;
-    this.domain = props.entity_id.split(".").shift()! as EntityDomain;
+    this.domain = props.entity_id.split(".").shift()! as Domain;
     this.fill(props);
 
     LG.limit("", 2).debug("Create entity", props);
