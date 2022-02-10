@@ -9,7 +9,7 @@ const scriptName = "test-ha-js-sugar";
 const LGR = LG.ns(scriptName);
 
 const ACCESS_TOKEN =
-  "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiI0NjYzNjk5ODE1OTA0NWJmOWQ3ODIwZmVlYWZlYTBmMSIsImlhdCI6MTY0NDIyODczOSwiZXhwIjoxOTU5NTg4NzM5fQ.hQyJ2foXHMYfE82YQ4ogT-V6V8kS0GmAIF2w8AlH_Yk";
+  "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiI3MjI1MDM4NDZjNzI0MzFmODYwNmI0ZTViNWYxMTVjNyIsImlhdCI6MTY0NDQyNTk5NywiZXhwIjoxOTU5Nzg1OTk3fQ.QBliLICX80o98AUADQBQU2I2mzhjxX1XkDDytabxkPk";
 
 (async function () {
   try {
@@ -40,23 +40,22 @@ const ACCESS_TOKEN =
     const sw = conn.getEntity<Switch>("switch.virtual_switch_1");
     const hacs = conn.getEntity<Sensor>("sensor.hacs");
     const fan = conn.getEntity<Fan>("fan.virtual_office_fan");
+    const tog = conn.getEntity<Switch>("input_boolean.toggle");
+    const tog2 = conn.getEntity<Switch>("input_boolean.toggle2");
     if (sw) LGR.debug(sw.domain, "=>", sw.id);
     LGR.debug("HACS:", hacs?.toHumanString());
-    if (lgt) {
-      lgt.addStateListener(
-        async (lgt: Light, oldState) => {
-          LGR.debug("Got light change", lgt.state, lgt.attributes);
-          await sw?.setState(lgt.state);
-          await fan?.setState(lgt.state);
-        },
-        { oldState: true, onlyIfStateChange: false }
-      );
-    }
+    tog?.addStateListener(
+      async (lgt: Switch, oldState) => {
+        await tog2?.setState(lgt.state);
+        await fan?.setState(lgt.state);
+      },
+      { oldState: true }
+    );
 
     LGR.notice(`-- ${scriptName} DONE --`);
     // process.exit();
   } catch (e) {
-    LGR.crit(`!! ${scriptName} ERROR ${(e as Error).message || ""} !!`);
+    LGR.crit(`!! ${scriptName} ERROR ${(e as Error)?.message || e} !!`);
     process.exit(1);
   }
 })();
