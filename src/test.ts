@@ -45,10 +45,11 @@ const ACCESS_TOKEN =
     if (lgt) {
       lgt.addStateListener(
         async (lgt: Light, oldState) => {
+          LGR.debug("Got light change", lgt.state, lgt.attributes);
           await sw?.setState(lgt.state);
           await fan?.setState(lgt.state);
         },
-        { oldState: true }
+        { oldState: true, onlyIfStateChange: false }
       );
     }
 
